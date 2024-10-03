@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +33,7 @@ import java.util.List;
 @RequestMapping("/api/users")
 @Tag(name = "User Management", description = "APIs for managing users")
 @RequiredArgsConstructor
+@Validated
 public class UserController {
 
     private final UserFacade userFacade;
@@ -71,7 +74,7 @@ public class UserController {
                     schema = @Schema(implementation = UserDTO.class)))
     @PostMapping
     public ResponseEntity<UserDTO> createUser(
-            @Parameter(description = "User object to be created") @RequestBody UserCreateParam user) {
+            @Parameter(description = "User object to be created") @Valid @RequestBody UserCreateParam user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userFacade.createUser(user));
     }
 
