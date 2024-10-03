@@ -2,6 +2,8 @@ package git.dimitrikvirik.springsoft.user.config;
 
 import git.dimitrikvirik.springsoft.user.model.dto.ErrorDTO;
 import io.jsonwebtoken.ExpiredJwtException;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -58,6 +60,29 @@ public class GlobalExceptionHandler {
                 errors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 ErrorDTO.builder().timestamp(new Date()).message(String.format("Validation failed: %s", errors)).build()
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+
+        String error;
+        if (ex.getCause() instanceof ConstraintViolationException) {
+            String constraintName = ((ConstraintViolationException) ex.getCause()).getConstraintName();
+            if (constraintName != null) {
+                error = switch (constraintName) {
+                    case "uk_users_email" -> "An account with this email already exists.";
+                    case "uk_users_username" -> "This username is already taken.";
+                    default -> "A database error occurred. Please try again.";
+                };
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                        ErrorDTO.builder().timestamp(new Date()).message(error).build()
+                );
+            }
+        }
+        error = "A database error occurred. Please try again.";
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ErrorDTO.builder().timestamp(new Date()).message(error).build()
         );
     }
 

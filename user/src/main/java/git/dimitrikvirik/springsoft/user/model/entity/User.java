@@ -12,7 +12,10 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_users_email", columnNames = {"email"}),
+        @UniqueConstraint(name = "uk_users_username", columnNames = {"username"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -47,7 +50,7 @@ public class User extends BaseDomain implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return  roles.stream().flatMap(role -> role.getAuthorities().stream())
+        return roles.stream().flatMap(role -> role.getAuthorities().stream())
                 .distinct()
                 .map(authority -> (GrantedAuthority) () -> authority).toList();
     }
