@@ -3,6 +3,7 @@ package git.dimitrikvirik.springsoft.user.service;
 import git.dimitrikvirik.springsoft.user.model.entity.User;
 import git.dimitrikvirik.springsoft.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,8 +27,9 @@ public class UserService implements UserDetailsService {
     }
 
     public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAllByEnabled(true,pageable);
+        return userRepository.findAllByEnabled(pageable);
     }
+
 
     public User getUserById(Long id) {
         return userRepository.findById(id).orElseThrow(

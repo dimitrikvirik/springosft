@@ -8,6 +8,8 @@ import git.dimitrikvirik.springsoft.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +24,11 @@ public class UserFacade {
     private static final Logger log = LoggerFactory.getLogger(UserFacade.class);
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final CacheManager cacheManager;
 
 
-    @Cacheable("users")
+
+    @Cacheable(value = "users", key = "'users_' + #pageable.pageSize + '_' + #pageable.pageNumber")
     public Page<UserDTO> getAllUsers(Pageable pageable) {
         log.info("Get all users");
         return userService.getAllUsers(pageable)
@@ -38,6 +42,7 @@ public class UserFacade {
         return UserDTO.fromEntity(userService.getUserById(id));
     }
 
+    @CacheEvict(value = {"users", "user"}, allEntries = true)
     public UserDTO createUser(UserCreateParam userCreateParam){
         log.info("Create user: {}", userCreateParam);
         User user = new User();
@@ -50,6 +55,7 @@ public class UserFacade {
         return UserDTO.fromEntity(userService.save(user));
     }
 
+    @CacheEvict(value = {"users", "user"}, allEntries = true)
     public UserDTO updateUser(Long id, UserUpdateParam userUpdateParam) {
         log.info("Update user: {}", id);
         User user = userService.getUserById(id);
@@ -60,6 +66,7 @@ public class UserFacade {
         return UserDTO.fromEntity(userService.save(user));
     }
 
+    @CacheEvict(value = {"users", "user"}, allEntries = true)
     public void deleteUser(Long id) {
         log.info("Delete user: {}", id);
         User user = userService.getUserById(id);

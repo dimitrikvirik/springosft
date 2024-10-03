@@ -1,17 +1,26 @@
 package git.dimitrikvirik.springsoft.user.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import git.dimitrikvirik.springsoft.user.model.entity.User;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
 @Getter
 @Setter
 @Builder
-public class UserDTO {
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+public class UserDTO implements IdentifiedDataSerializable {
+
+    public static final int FACTORY_ID = 1000;
+    public static final int CLASS_ID = 1;
 
     @JsonProperty("firstname")
     private String firstname;
@@ -39,4 +48,33 @@ public class UserDTO {
                 .build();
     }
 
+    @Override
+    @JsonIgnore
+    public  int getFactoryId() {
+        return 1000;
+    }
+
+    @Override
+    @JsonIgnore
+    public int getClassId() {
+        return 1;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput objectDataOutput) throws IOException {
+        objectDataOutput.writeString(firstname);
+        objectDataOutput.writeString(lastname);
+        objectDataOutput.writeString(username);
+        objectDataOutput.writeString(email);
+        objectDataOutput.writeString(createdAt);
+    }
+
+    @Override
+    public void readData(ObjectDataInput objectDataInput) throws IOException {
+        firstname = objectDataInput.readString();
+        lastname = objectDataInput.readString();
+        username = objectDataInput.readString();
+        email = objectDataInput.readString();
+        createdAt = objectDataInput.readString();
+    }
 }

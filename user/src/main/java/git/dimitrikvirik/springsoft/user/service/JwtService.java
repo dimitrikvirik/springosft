@@ -3,6 +3,7 @@ package git.dimitrikvirik.springsoft.user.service;
 
 import git.dimitrikvirik.springsoft.user.utils.SecretBasedRSAKeyGenerator;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -102,6 +103,7 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
+
         return (Claims) Jwts
                 .parser()
                 .verifyWith(getPublicKey(publicKeyString))

@@ -6,6 +6,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -25,6 +26,14 @@ public class GlobalExceptionHandler {
                 .message(ex.getMessage())
                 .timestamp(new Date()).build(),
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
+        return new ResponseEntity<>(ErrorDTO.builder()
+                .message(ex.getMessage())
+                .timestamp(new Date()).build(),
+                HttpStatus.FORBIDDEN);
     }
 
 
@@ -62,6 +71,8 @@ public class GlobalExceptionHandler {
                 ErrorDTO.builder().timestamp(new Date()).message(String.format("Validation failed: %s", errors)).build()
         );
     }
+
+
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {

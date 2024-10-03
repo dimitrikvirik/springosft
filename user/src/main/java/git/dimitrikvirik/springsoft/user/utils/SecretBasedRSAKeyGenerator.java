@@ -10,21 +10,11 @@ import java.util.Base64;
 public class SecretBasedRSAKeyGenerator {
     private static final int KEY_SIZE = 2048;
     private static final int ITERATIONS = 10000;
-    private static final int SALT_SIZE = 32;
 
     public static KeyPair generateKeyPair(String secret) throws Exception {
-        // Generate a salt
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[SALT_SIZE];
-        random.nextBytes(salt);
-
-        // Derive a seed from the secret
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        PBEKeySpec spec = new PBEKeySpec(secret.toCharArray(), salt, ITERATIONS, KEY_SIZE);
-        byte[] seed = factory.generateSecret(spec).getEncoded();
-
-        // Use the seed to initialize a SecureRandom
-        SecureRandom seededRandom = new SecureRandom(seed);
+        // Use the secret directly to seed the SecureRandom
+        byte[] secretBytes = secret.getBytes();
+        SecureRandom seededRandom = new SecureRandom(secretBytes);
 
         // Generate the RSA key pair
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
@@ -32,9 +22,25 @@ public class SecretBasedRSAKeyGenerator {
         return keyGen.generateKeyPair();
     }
 
-    // Utility methods to convert keys to/from Base64 strings
     public static String publicKeyToString(PublicKey publicKey) {
         return Base64.getEncoder().encodeToString(publicKey.getEncoded());
     }
 
+    public static String privateKeyToString(PrivateKey privateKey) {
+        return Base64.getEncoder().encodeToString(privateKey.getEncoded());
+    }
+
+    public static PublicKey stringToPublicKey(String keyString) throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(keyString);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
+    }
+
+    public static PrivateKey stringToPrivateKey(String keyString) throws Exception {
+        byte[] keyBytes = Base64.getDecoder().decode(keyString);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(spec);
+    }
 }

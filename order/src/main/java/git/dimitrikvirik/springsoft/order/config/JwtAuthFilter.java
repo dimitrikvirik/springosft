@@ -3,6 +3,7 @@ package git.dimitrikvirik.springsoft.order.config;
 
 import git.dimitrikvirik.springsoft.order.model.dto.PrincipalDTO;
 import git.dimitrikvirik.springsoft.order.service.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,24 +43,36 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            Long id = jwtService.extractClaim(jwt, claims -> claims.get("id", Long.class));
-            List<String> authorities = jwtService.extractClaim(jwt, claims -> claims.get("authorities", List.class));
+                Long id = jwtService.extractClaim(jwt, claims -> claims.get("id", Long.class));
+                List<String> authorities = jwtService.extractClaim(jwt, claims -> claims.get("authorities", List.class));
 
 
-            if (jwtService.isTokenValid(jwt)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        new PrincipalDTO(id, authorities),
-                        null,
-                        authorities.stream().map(authority -> (GrantedAuthority) () -> authority).toList()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtService.isTokenValid(jwt)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            new PrincipalDTO(id, authorities),
+                            null,
+                            authorities.stream().map(authority -> (GrantedAuthority) () -> authority).toList()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (ExpiredJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"JWT token has expired\"}");
+            return;
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"JWT token is invalid\"}");
+            return;
         }
         filterChain.doFilter(request, response);
     }
