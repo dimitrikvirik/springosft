@@ -1,6 +1,33 @@
 version: '3.8'
 
 services:
+  user:
+    image: user-app
+    ports:
+      - "8080:8080"
+    environment:
+      HAZELCAST_HOST: hazelcast
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: springsoft
+      DB_USER: root
+      DB_PASSWORD: pas123
+      SERVER_PORT: 8080
+      KAFKA_BOOTSTRAP_SERVERS: kafka
+  order:
+    image: order-app
+    ports:
+      - "8090:8080"
+    environment:
+      HAZELCAST_HOST: hazelcast
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: springsoft
+      DB_USER: root
+      DB_PASSWORD: pas123
+      SERVER_PORT: 8080
+      KAFKA_BOOTSTRAP_SERVERS: kafka
+      API_USER: http://user:8080
   postgres:
     image: postgres:13
     environment:
