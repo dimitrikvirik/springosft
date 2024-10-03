@@ -1,0 +1,83 @@
+package git.dimitrikvirik.springsoft.order.facade;
+
+import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
+import git.dimitrikvirik.springsoft.order.model.dto.PrincipalDTO;
+import git.dimitrikvirik.springsoft.order.model.entity.Order;
+import git.dimitrikvirik.springsoft.order.model.param.OrderParam;
+import git.dimitrikvirik.springsoft.order.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Objects;
+
+@Service
+@RequiredArgsConstructor
+public class OrderFacade {
+
+    private final OrderService orderService;
+
+
+    public Page<OrderDTO> getAllOrders(Pageable pageable) {
+        if (getPrincipal().authorities().contains("GET_ORDERS")) {
+            return orderService.getOrders(pageable).map(OrderDTO::fromEntity);
+        }
+        return orderService.getUserOrders(getPrincipal().id(), pageable).map(OrderDTO::fromEntity);
+    }
+
+    @PostAuthorize("returnObject.userId == authentication.principal.id or hasAuthority('GET_ORDERS')")
+    public OrderDTO getOrderById(Long id) {
+        return OrderDTO.fromEntity(orderService.getById(id));
+    }
+
+    public OrderDTO createOrder(OrderParam orderParam) {
+        PrincipalDTO principal = getPrincipal();
+
+        Order order = new Order();
+        order.setProduct(orderParam.getProduct());
+        order.setQuantity(orderParam.getQuantity());
+        order.setPrice(orderParam.getPrice());
+        order.setUserId(principal.id());
+        order.setDeleted(false);
+
+        return OrderDTO.fromEntity(orderService.save(order));
+    }
+
+    public OrderDTO updateOrder(Long id, OrderParam orderParam) {
+        PrincipalDTO principal = getPrincipal();
+
+        Order order = orderService.getById(id);
+        if (!Objects.equals(principal.id(), order.getUserId()) && !principal.authorities().contains("UPDATE_ORDER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+
+        order.setProduct(orderParam.getProduct());
+        order.setQuantity(orderParam.getQuantity());
+        order.setPrice(orderParam.getPrice());
+
+        return OrderDTO.fromEntity(orderService.save(order));
+    }
+
+    public void deleteOrder(Long id) {
+        PrincipalDTO principal = getPrincipal();
+
+        Order order = orderService.getById(id);
+        if (!Objects.equals(principal.id(), order.getUserId()) && !principal.authorities().contains("DELETE_ORDER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+
+        order.setDeleted(true);
+        orderService.save(order);
+    }
+
+
+    private PrincipalDTO getPrincipal() {
+        return (PrincipalDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+}

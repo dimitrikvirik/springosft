@@ -37,6 +37,7 @@ public class UserFacade {
         user.setUsername(userCreateParam.getUsername());
         user.setEmail(userCreateParam.getEmail());
         user.setPassword(passwordEncoder.encode(userCreateParam.getPassword()));
+        user.setEnabled(true);
         return UserDTO.fromEntity(userService.save(user));
     }
 

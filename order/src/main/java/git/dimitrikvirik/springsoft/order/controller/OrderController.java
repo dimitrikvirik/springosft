@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.order.controller;
 
+import git.dimitrikvirik.springsoft.order.facade.OrderFacade;
 import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
 import git.dimitrikvirik.springsoft.order.model.param.OrderParam;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,11 +8,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.query.Page;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +28,10 @@ public class OrderController {
     private final OrderFacade orderFacade;
 
 
-
     @GetMapping
     @Operation(summary = "Get all orders", description = "Returns a list of all orders")
     @PageableAsQueryParam
     public ResponseEntity<Page<OrderDTO>> getAllOrders(@PageableDefault(size = 50, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
-
         return ResponseEntity.ok(orderFacade.getAllOrders(pageable));
     }
 
@@ -46,7 +46,8 @@ public class OrderController {
     @PostMapping
     @Operation(summary = "Create a new order", description = "Adds a new order to the system")
     public ResponseEntity<OrderDTO> createOrder(
-            @Parameter(description = "Order details") @RequestBody @Valid OrderParam orderParam) {
+            @Parameter(description = "Order details") @RequestBody @Valid OrderParam orderParam
+            ) {
         OrderDTO createdOrder = orderFacade.createOrder(orderParam);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }

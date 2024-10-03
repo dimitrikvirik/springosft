@@ -10,6 +10,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -71,9 +69,18 @@ public class JwtService {
             UserDetails userDetails,
             long expiration
     ) {
+
+        List<String> authorities = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+        Map<String, Object> extraClaimsMap = new HashMap<>();
+        extraClaimsMap.put("id", userDetails.getUsername());
+        extraClaimsMap.put("email", userDetails.getUsername());
+        extraClaimsMap.put("authorities", authorities);
+        extraClaimsMap.putAll(extraClaims);
+
         return Jwts
                 .builder()
-                .claims(extraClaims)
+                .claims(extraClaimsMap)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))

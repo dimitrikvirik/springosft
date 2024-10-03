@@ -26,7 +26,7 @@ public class UserService implements UserDetailsService {
     }
 
     public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+        return userRepository.findAllByEnabled(true,pageable);
     }
 
     public User getUserById(Long id) {

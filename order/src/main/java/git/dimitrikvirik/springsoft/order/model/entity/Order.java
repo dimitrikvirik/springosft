@@ -27,6 +27,9 @@ public class Order extends BaseDomain {
     @Column(name = "price")
     private Double price;
 
+    @Column(name = "deleted")
+    private Boolean deleted;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
