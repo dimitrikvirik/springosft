@@ -32,4 +32,8 @@ public class OrderService {
     public Order save(Order order) {
         return orderRepository.save(order);
     }
+
+    public void deleteAllUserOrders(Long userId) {
+        orderRepository.deleteAllByUserId(userId);
+    }
 }

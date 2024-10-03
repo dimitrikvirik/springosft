@@ -1,6 +1,7 @@
 package git.dimitrikvirik.springsoft.user.facade;
 
 import git.dimitrikvirik.springsoft.user.model.dto.UserDTO;
+import git.dimitrikvirik.springsoft.user.model.dto.UserKafkaDTO;
 import git.dimitrikvirik.springsoft.user.model.entity.User;
 import git.dimitrikvirik.springsoft.user.model.param.UserCreateParam;
 import git.dimitrikvirik.springsoft.user.model.param.UserUpdateParam;
@@ -8,11 +9,11 @@ import git.dimitrikvirik.springsoft.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class UserFacade {
     private static final Logger log = LoggerFactory.getLogger(UserFacade.class);
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final CacheManager cacheManager;
+    private final KafkaTemplate<String, UserKafkaDTO> kafkaTemplate;
 
 
 
@@ -45,6 +46,9 @@ public class UserFacade {
     @CacheEvict(value = "users", allEntries = true)
     public UserDTO createUser(UserCreateParam userCreateParam){
         log.info("Create user: {}", userCreateParam);
+
+
+
         User user = new User();
         user.setFirstname(userCreateParam.getFirstname());
         user.setLastname(userCreateParam.getLastname());
@@ -52,7 +56,10 @@ public class UserFacade {
         user.setEmail(userCreateParam.getEmail());
         user.setPassword(passwordEncoder.encode(userCreateParam.getPassword()));
         user.setEnabled(true);
-        return UserDTO.fromEntity(userService.save(user));
+        UserDTO userDTO = UserDTO.fromEntity(userService.save(user));
+
+
+        return userDTO;
     }
 
     @CacheEvict(value = "users", allEntries = true)
@@ -71,6 +78,8 @@ public class UserFacade {
         log.info("Delete user: {}", id);
         User user = userService.getUserById(id);
         user.setEnabled(false);
+
+        kafkaTemplate.send("user-topic", new UserKafkaDTO(user.getId(), user.getUsername(), false));
         userService.save(user);
     }
 

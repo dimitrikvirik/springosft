@@ -2,6 +2,7 @@ package git.dimitrikvirik.springsoft.order.facade;
 
 import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
 import git.dimitrikvirik.springsoft.order.model.dto.PrincipalDTO;
+import git.dimitrikvirik.springsoft.order.model.dto.UserKafkaDTO;
 import git.dimitrikvirik.springsoft.order.model.entity.Order;
 import git.dimitrikvirik.springsoft.order.model.param.OrderParam;
 import git.dimitrikvirik.springsoft.order.service.OrderService;
@@ -13,6 +14,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -91,6 +93,14 @@ public class OrderFacade {
 
     private PrincipalDTO getPrincipal() {
         return (PrincipalDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    @KafkaListener(topics = "user-topic", groupId = "order-group")
+    public void userConsume(UserKafkaDTO userKafkaDTO) {
+        log.info("User consume: {}", userKafkaDTO);
+        if(!userKafkaDTO.enabled()) {
+            orderService.deleteAllUserOrders(userKafkaDTO.userId());
+        }
     }
 
 }

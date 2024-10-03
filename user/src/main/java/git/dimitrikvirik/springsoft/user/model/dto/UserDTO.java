@@ -22,6 +22,9 @@ public class UserDTO implements IdentifiedDataSerializable {
     public static final int FACTORY_ID = 1000;
     public static final int CLASS_ID = 1;
 
+    @JsonProperty("id")
+    private Long id;
+
     @JsonProperty("firstname")
     private String firstname;
 
@@ -62,6 +65,7 @@ public class UserDTO implements IdentifiedDataSerializable {
 
     @Override
     public void writeData(ObjectDataOutput objectDataOutput) throws IOException {
+        objectDataOutput.writeLong(id);
         objectDataOutput.writeString(firstname);
         objectDataOutput.writeString(lastname);
         objectDataOutput.writeString(username);
@@ -71,6 +75,7 @@ public class UserDTO implements IdentifiedDataSerializable {
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
+        id = objectDataInput.readLong();
         firstname = objectDataInput.readString();
         lastname = objectDataInput.readString();
         username = objectDataInput.readString();
