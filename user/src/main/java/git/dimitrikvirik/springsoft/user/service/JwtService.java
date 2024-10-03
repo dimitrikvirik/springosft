@@ -1,8 +1,12 @@
 package git.dimitrikvirik.springsoft.user.service;
 
 
+import git.dimitrikvirik.springsoft.user.utils.SecretBasedRSAKeyGenerator;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +15,11 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,12 +28,26 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
     @Value("${jwt.secret}")
     private String secretKey;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+
+    private KeyPair keyPair;
+
+
+    @Getter
+    private String publicKeyString;
+
+    @PostConstruct
+    public void init() throws Exception {
+        keyPair = SecretBasedRSAKeyGenerator.generateKeyPair(secretKey);
+        publicKeyString = SecretBasedRSAKeyGenerator.publicKeyToString(keyPair.getPublic());
+    }
+
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -35,9 +58,6 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
-    }
 
     public String generateToken(
             Map<String, Object> extraClaims,
@@ -57,7 +77,7 @@ public class JwtService {
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSignInKey())
+                .signWith( keyPair.getPrivate())
                 .compact();
     }
 
@@ -77,12 +97,24 @@ public class JwtService {
     private Claims extractAllClaims(String token) {
         return (Claims) Jwts
                 .parser()
-                .verifyWith(getSignInKey())
+                .verifyWith(getPublicKey(publicKeyString))
                 .build()
                 .parse(token).getPayload();
     }
 
-    private SecretKey getSignInKey() {
-        return new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+
+
+    private   PublicKey getPublicKey(String publicKey) {
+        try {
+
+            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKey);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
+            return keyFactory.generatePublic(keySpec);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create public key", e);
+        }
     }
+
+
 }
