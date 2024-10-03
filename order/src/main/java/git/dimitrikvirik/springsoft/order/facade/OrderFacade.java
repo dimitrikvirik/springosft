@@ -8,6 +8,7 @@ import git.dimitrikvirik.springsoft.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public class OrderFacade {
     private static final Logger log = LoggerFactory.getLogger(OrderFacade.class);
     private final OrderService orderService;
 
-    @Cacheable("orders")
+    @Cacheable(value = "orders", key = "'orders_' + #pageable.pageSize + '_' + #pageable.pageNumber")
     public Page<OrderDTO> getAllOrders(Pageable pageable) {
         if (getPrincipal().authorities().contains("GET_ORDERS")) {
             log.info("Get all orders");
@@ -38,12 +39,12 @@ public class OrderFacade {
     }
 
     @PostAuthorize("returnObject.userId == authentication.principal.id or hasAuthority('GET_ORDERS')")
-    @Cacheable(value = "order", key = "#id")
+    @Cacheable(value = "orders", key = "#id")
     public OrderDTO getOrderById(Long id) {
         log.info("Get order by id: {}", id);
         return OrderDTO.fromEntity(orderService.getById(id));
     }
-
+    @CacheEvict(value = "users", allEntries = true)
     public OrderDTO createOrder(OrderParam orderParam) {
         log.info("Create order: {}", orderParam);
         PrincipalDTO principal = getPrincipal();
@@ -57,7 +58,7 @@ public class OrderFacade {
 
         return OrderDTO.fromEntity(orderService.save(order));
     }
-
+    @CacheEvict(value = "users", allEntries = true)
     public OrderDTO updateOrder(Long id, OrderParam orderParam) {
         log.info("Update order: {}", orderParam);
         PrincipalDTO principal = getPrincipal();
@@ -73,7 +74,7 @@ public class OrderFacade {
 
         return OrderDTO.fromEntity(orderService.save(order));
     }
-
+    @CacheEvict(value = "users", allEntries = true)
     public void deleteOrder(Long id) {
         log.info("Delete order: {}", id);
         PrincipalDTO principal = getPrincipal();

@@ -36,13 +36,13 @@ public class UserFacade {
     }
 
     @PostAuthorize("returnObject.username == authentication.name or hasAuthority('GET_USERS')")
-    @Cacheable(value = "user", key = "#id")
+    @Cacheable(value = "users", key = "#id")
     public UserDTO getUserById(Long id) {
         log.info("Get user by id: {}", id);
         return UserDTO.fromEntity(userService.getUserById(id));
     }
 
-    @CacheEvict(value = {"users", "user"}, allEntries = true)
+    @CacheEvict(value = "users", allEntries = true)
     public UserDTO createUser(UserCreateParam userCreateParam){
         log.info("Create user: {}", userCreateParam);
         User user = new User();
@@ -55,7 +55,7 @@ public class UserFacade {
         return UserDTO.fromEntity(userService.save(user));
     }
 
-    @CacheEvict(value = {"users", "user"}, allEntries = true)
+    @CacheEvict(value = "users", allEntries = true)
     public UserDTO updateUser(Long id, UserUpdateParam userUpdateParam) {
         log.info("Update user: {}", id);
         User user = userService.getUserById(id);
@@ -66,7 +66,7 @@ public class UserFacade {
         return UserDTO.fromEntity(userService.save(user));
     }
 
-    @CacheEvict(value = {"users", "user"}, allEntries = true)
+    @CacheEvict(value = "users", allEntries = true)
     public void deleteUser(Long id) {
         log.info("Delete user: {}", id);
         User user = userService.getUserById(id);
