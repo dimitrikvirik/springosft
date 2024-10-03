@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.order.model.entity;
 
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
