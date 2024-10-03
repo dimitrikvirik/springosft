@@ -37,7 +37,7 @@ public class User extends BaseDomain implements UserDetails {
     @Column(name = "enabled")
     private Boolean enabled;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_to_user_role",
             joinColumns = @JoinColumn(name = "user_id"),

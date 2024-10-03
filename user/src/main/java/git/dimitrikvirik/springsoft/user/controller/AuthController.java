@@ -34,7 +34,7 @@ public class AuthController {
     })
     @PostMapping("/api/login")
     public ResponseEntity<AuthDTO> login(
-            @RequestBody @Schema(description = "User credentials") UserLoginParam loginParam
+            @RequestBody  UserLoginParam loginParam
     ) {
         return ResponseEntity.ok(authService.getToken(loginParam));
     }

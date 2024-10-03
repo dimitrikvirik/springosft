@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.converters.models.PageableAsQueryParam;
@@ -42,6 +43,7 @@ public class UserController {
     @GetMapping
     @PageableAsQueryParam
     @PreAuthorize("hasAuthority('GET_USERS')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Page<UserDTO>> getAllUsers(
             @PageableDefault(size = 50, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
         return ResponseEntity.ok(userFacade.getAllUsers(pageable));
@@ -56,7 +58,7 @@ public class UserController {
                     content = @Content)
     })
     @GetMapping("/{id}")
-    @PostAuthorize("returnObject.username == authentication.name or hasAuthority('GET_USERS')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UserDTO> getUserById(
             @Parameter(description = "ID of the user to be retrieved") @PathVariable Long id) {
         return ResponseEntity.ok(userFacade.getUserById(id));
@@ -83,6 +85,7 @@ public class UserController {
     })
     @PreAuthorize("hasAuthority('UPDATE_USER') or #id == authentication.principal.id")
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UserDTO> updateUser(
             @Parameter(description = "ID of the user to be updated") @PathVariable Long id,
             @Parameter(description = "Updated user object") @RequestBody UserUpdateParam user) {
@@ -96,6 +99,7 @@ public class UserController {
     })
     @PreAuthorize("hasAuthority('DELETE_USER') or #id == authentication.principal.id")
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> deleteUser(
             @Parameter(description = "ID of the user to be deleted") @PathVariable Long id) {
         userFacade.deleteUser(id);

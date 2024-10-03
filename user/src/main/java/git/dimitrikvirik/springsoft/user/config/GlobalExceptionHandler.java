@@ -1,6 +1,7 @@
 package git.dimitrikvirik.springsoft.user.config;
 
 import git.dimitrikvirik.springsoft.user.model.dto.ErrorDTO;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -36,6 +37,14 @@ public class GlobalExceptionHandler {
                 .message(ex.getMessage())
                 .timestamp(new Date()).build(),
                 HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<?> handleExpiredJwtException(ExpiredJwtException ex) {
+        return new ResponseEntity<>(ErrorDTO.builder()
+                .message("Token expired")
+                .timestamp(new Date()).build(),
+                HttpStatus.UNAUTHORIZED);
     }
 
 }
