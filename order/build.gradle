@@ -17,6 +17,9 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'io.github.openfeign:feign-okhttp:13.4'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.hazelcast:hazelcast:5.5.0'
+    implementation 'com.hazelcast:hazelcast-spring:5.5.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'

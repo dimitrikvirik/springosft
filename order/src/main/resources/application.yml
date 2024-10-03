@@ -27,3 +27,5 @@ logging:
   level:
     org.springframework: INFO
     org.hibernate: INFO
+hazelcast:
+  host: ${HAZELCAST_HOST:localhost}

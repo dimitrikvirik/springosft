@@ -20,7 +20,6 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
-
 logging:
   level:
     org.springframework: INFO
@@ -28,3 +27,5 @@ logging:
 jwt:
   secret: ${JWT_SECRET:Adewfgwegewigjew9ohg9ewuhg9uwqhdf932hjqg93ijfgoie4hogi4w3f8h3efyh38r32fghoihgowhe4ogihjwqoiqhfohwq9ufdgwqiofgqwiofghwioufhqwoifpqwojdfowqhfowqhfowqhfopwqhf0wqhfoiwqhfowhfoqwhfowqhfowqhfowqhfowqhyf9wqyf90h23190fhfwnsb1481jmm31f}
   expiration: ${JWT_EXPIRATION:600000}
+hazelcast:
+    host: ${HAZELCAST_HOST:localhost}

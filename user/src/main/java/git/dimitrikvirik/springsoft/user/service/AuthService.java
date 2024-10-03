@@ -34,6 +34,7 @@ public class AuthService {
                 Map.of("id", userDetails.getId(), "email", userDetails.getEmail()), userDetails)).build();
     }
 
+
     public PublicKeyDTO getPublicKey(){
 
         return PublicKeyDTO.builder().key(jwtService.getPublicKeyString()).build();
