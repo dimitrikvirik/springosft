@@ -16,9 +16,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     public Order getById(Long id) {
-        return orderRepository.findById(id).orElseThrow(
+        Order order = orderRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")
         );
+        if(order.getDeleted()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
+
+        return order;
     }
 
     public Page<Order> getOrders(Pageable pageable) {

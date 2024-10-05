@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.order.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
@@ -21,6 +22,9 @@ public class OrderDTO implements IdentifiedDataSerializable {
 
     public static final int FACTORY_ID = 2000;
     public static final int CLASS_ID = 2;
+
+    @JsonProperty("id")
+    private Long id;
 
     @JsonProperty("user_id")
     private Long userId;
@@ -44,6 +48,7 @@ public class OrderDTO implements IdentifiedDataSerializable {
     public static OrderDTO fromEntity(Order order) {
 
         return OrderDTO.builder()
+                .id(order.getId())
                 .userId(order.getUserId())
                 .product(order.getProduct())
                 .quantity(order.getQuantity())
@@ -55,17 +60,20 @@ public class OrderDTO implements IdentifiedDataSerializable {
     }
 
     @Override
+    @JsonIgnore
     public int getFactoryId() {
         return FACTORY_ID;
     }
 
     @Override
+    @JsonIgnore
     public int getClassId() {
         return CLASS_ID;
     }
 
     @Override
     public void writeData(ObjectDataOutput objectDataOutput) throws IOException {
+        objectDataOutput.writeLong(id);
         objectDataOutput.writeLong(userId);
         objectDataOutput.writeString(product);
         objectDataOutput.writeLong(quantity);
@@ -76,7 +84,7 @@ public class OrderDTO implements IdentifiedDataSerializable {
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
-
+        id = objectDataInput.readLong();
         userId = objectDataInput.readLong();
         product = objectDataInput.readString();
         quantity = objectDataInput.readLong();

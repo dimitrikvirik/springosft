@@ -14,6 +14,7 @@ import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -25,35 +26,17 @@ public class JwtService {
 
     private final AuthApiClient authApiClient;
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
 
 
-    public boolean isTokenValid(String token) {
 
-        return  !isTokenExpired(token);
-    }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
 
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return (Claims) Jwts
+    public Map<String, Object> extractAllClaims(String token) {
+       return  ( (Claims) Jwts
                 .parser()
                 .verifyWith(getPublicKey(getPublicKeyString()))
                 .build()
-                .parse(token).getPayload();
+                .parse(token).getPayload());
     }
 
 

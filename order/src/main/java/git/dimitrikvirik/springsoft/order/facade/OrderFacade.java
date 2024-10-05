@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.order.facade;
 
+import git.dimitrikvirik.springsoft.order.model.OrderStatus;
 import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
 import git.dimitrikvirik.springsoft.order.model.dto.PrincipalDTO;
 import git.dimitrikvirik.springsoft.order.model.dto.UserKafkaDTO;
@@ -40,13 +41,13 @@ public class OrderFacade {
         return orderService.getUserOrders(getPrincipal().id(), pageable).map(OrderDTO::fromEntity);
     }
 
-    @PostAuthorize("returnObject.userId == authentication.principal.id or hasAuthority('GET_ORDERS')")
+   @PostAuthorize("returnObject.userId == authentication.principal.id or hasAuthority('GET_ORDERS')")
     @Cacheable(value = "orders", key = "#id")
     public OrderDTO getOrderById(Long id) {
         log.info("Get order by id: {}", id);
         return OrderDTO.fromEntity(orderService.getById(id));
     }
-    @CacheEvict(value = "users", allEntries = true)
+    @CacheEvict(value = "orders", allEntries = true)
     public OrderDTO createOrder(OrderParam orderParam) {
         log.info("Create order: {}", orderParam);
         PrincipalDTO principal = getPrincipal();
@@ -56,11 +57,12 @@ public class OrderFacade {
         order.setQuantity(orderParam.getQuantity());
         order.setPrice(orderParam.getPrice());
         order.setUserId(principal.id());
+        order.setStatus(orderParam.getStatus());
         order.setDeleted(false);
 
         return OrderDTO.fromEntity(orderService.save(order));
     }
-    @CacheEvict(value = "users", allEntries = true)
+    @CacheEvict(value = "orders", allEntries = true)
     public OrderDTO updateOrder(Long id, OrderParam orderParam) {
         log.info("Update order: {}", orderParam);
         PrincipalDTO principal = getPrincipal();
@@ -73,10 +75,11 @@ public class OrderFacade {
         order.setProduct(orderParam.getProduct());
         order.setQuantity(orderParam.getQuantity());
         order.setPrice(orderParam.getPrice());
+        order.setStatus(orderParam.getStatus());
 
         return OrderDTO.fromEntity(orderService.save(order));
     }
-    @CacheEvict(value = "users", allEntries = true)
+    @CacheEvict(value = "orders", allEntries = true)
     public void deleteOrder(Long id) {
         log.info("Delete order: {}", id);
         PrincipalDTO principal = getPrincipal();
