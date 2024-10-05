@@ -20,13 +20,16 @@ dependencies {
     implementation 'com.hazelcast:hazelcast:5.5.0'
     implementation 'com.hazelcast:hazelcast-spring:5.5.0'
     implementation 'org.springframework.kafka:spring-kafka'
-
-
-
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:postgresql:1.20.2'
+    testImplementation 'org.testcontainers:junit-jupiter:1.20.2'
+    testImplementation 'org.testcontainers:kafka:1.20.2'
+    testImplementation 'org.springframework.security:spring-security-test'
 
 }

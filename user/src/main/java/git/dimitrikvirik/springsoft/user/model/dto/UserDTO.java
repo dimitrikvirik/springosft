@@ -43,6 +43,7 @@ public class UserDTO implements IdentifiedDataSerializable {
     public static UserDTO fromEntity(User user) {
 
         return UserDTO.builder()
+                .id(user.getId())
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .username(user.getUsername())

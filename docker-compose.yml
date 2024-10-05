@@ -13,7 +13,8 @@ services:
       DB_USER: root
       DB_PASSWORD: pas123
       SERVER_PORT: 8080
-      KAFKA_BOOTSTRAP_SERVERS: kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
   order:
     image: order-app
     ports:
@@ -26,7 +27,7 @@ services:
       DB_USER: root
       DB_PASSWORD: pas123
       SERVER_PORT: 8080
-      KAFKA_BOOTSTRAP_SERVERS: kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       API_USER: http://user:8080
   postgres:
     image: postgres:13

@@ -4,9 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import git.dimitrikvirik.springsoft.user.validator.ValidEmail;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserCreateParam {
 
     @JsonProperty("firstname")

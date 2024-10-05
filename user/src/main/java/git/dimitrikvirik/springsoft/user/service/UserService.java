@@ -32,9 +32,14 @@ public class UserService implements UserDetailsService {
 
 
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(
+        User user = userRepository.findById(id).orElseThrow(
                 () -> new UsernameNotFoundException("User not found")
         );
+        if(!user.isEnabled()){
+            throw new UsernameNotFoundException("User not found");
+        }
+
+        return user;
     }
 
     public User save(User user) {

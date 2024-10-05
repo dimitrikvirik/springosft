@@ -28,7 +28,6 @@ public class UserFacade {
     private final KafkaTemplate<String, UserKafkaDTO> kafkaTemplate;
 
 
-
     @Cacheable(value = "users", key = "'users_' + #pageable.pageSize + '_' + #pageable.pageNumber")
     public Page<UserDTO> getAllUsers(Pageable pageable) {
         log.info("Get all users");
@@ -44,9 +43,8 @@ public class UserFacade {
     }
 
     @CacheEvict(value = "users", allEntries = true)
-    public UserDTO createUser(UserCreateParam userCreateParam){
+    public UserDTO createUser(UserCreateParam userCreateParam) {
         log.info("Create user: {}", userCreateParam);
-
 
 
         User user = new User();
@@ -79,7 +77,7 @@ public class UserFacade {
         User user = userService.getUserById(id);
         user.setEnabled(false);
 
-        kafkaTemplate.send("user-topic", new UserKafkaDTO(user.getId(), user.getUsername(), false));
+        kafkaTemplate.send("user-topic", user.getId().toString(), new UserKafkaDTO(user.getId(), user.getUsername(), false));
         userService.save(user);
     }
 
