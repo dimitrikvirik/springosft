@@ -48,11 +48,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             Map<String, Object> allClaims = jwtService.extractAllClaims(jwt);
 
 
-            Long id = (Long) allClaims.get("id");
+            Integer id = ((Integer) allClaims.get("id"));
             List<String> authorities = (List<String>) allClaims.get("authorities");
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    new PrincipalDTO(id, authorities),
+                    new PrincipalDTO(Long.valueOf(id), authorities),
                     null,
                     authorities.stream().map(authority -> (GrantedAuthority) () -> authority).toList()
             );
