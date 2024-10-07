@@ -2,6 +2,7 @@ package git.dimitrikvirik.springsoft.order.service;
 
 
 import git.dimitrikvirik.springsoft.common.services.JwtTokenReader;
+import git.dimitrikvirik.springsoft.common.utils.SecretBasedRSAKeyGenerator;
 import git.dimitrikvirik.springsoft.order.client.AuthApiClient;
 
 import io.jsonwebtoken.Claims;
@@ -32,23 +33,13 @@ public class JwtService implements JwtTokenReader {
     public Claims extractAllClaims(String token) {
        return  ( (Claims) Jwts
                 .parser()
-                .verifyWith(getPublicKey(getPublicKeyString()))
+               .verifyWith(SecretBasedRSAKeyGenerator.stringToPublicKey(publicKeyString))
                 .build()
                 .parse(token).getPayload());
     }
 
 
-    private   PublicKey getPublicKey(String publicKey) {
-        try {
 
-            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKey);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
-            return keyFactory.generatePublic(keySpec);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create public key", e);
-        }
-    }
 
 
     private String getPublicKeyString() {

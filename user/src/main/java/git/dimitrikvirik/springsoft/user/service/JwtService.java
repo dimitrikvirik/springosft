@@ -80,7 +80,7 @@ public class JwtService implements JwtTokenReader, JwtTokenGenerator {
 
         return (Claims) Jwts
                 .parser()
-                .verifyWith(  SecretBasedRSAKeyGenerator.stringToPublicKey(publicKeyString))
+                .verifyWith(SecretBasedRSAKeyGenerator.stringToPublicKey(publicKeyString))
                 .build()
                 .parse(token).getPayload();
     }
