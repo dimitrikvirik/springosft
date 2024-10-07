@@ -40,6 +40,9 @@ public class UserDTO implements IdentifiedDataSerializable {
     @JsonProperty("createdAt")
     private String createdAt;
 
+    @JsonProperty("role")
+    private String role;
+
     public static UserDTO fromEntity(User user) {
 
         return UserDTO.builder()
@@ -49,6 +52,7 @@ public class UserDTO implements IdentifiedDataSerializable {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .createdAt(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(user.getCreatedAt()))
+
                 .build();
     }
 

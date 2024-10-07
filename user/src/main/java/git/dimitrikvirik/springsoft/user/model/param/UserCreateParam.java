@@ -1,8 +1,10 @@
 package git.dimitrikvirik.springsoft.user.model.param;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import git.dimitrikvirik.springsoft.user.model.UserRoleName;
 import git.dimitrikvirik.springsoft.user.validator.ValidEmail;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,4 +39,7 @@ public class UserCreateParam {
     @Size(min = 8, max = 100)
     private String password;
 
+    @JsonProperty("role")
+    @NotNull
+    private UserRoleName role;
 }

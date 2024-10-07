@@ -54,6 +54,7 @@ public class UserFacade {
         user.setEmail(userCreateParam.getEmail());
         user.setPassword(passwordEncoder.encode(userCreateParam.getPassword()));
         user.setEnabled(true);
+        user.setRole(userService.getRole(userCreateParam.getRole()));
         UserDTO userDTO = UserDTO.fromEntity(userService.save(user));
 
 
@@ -68,6 +69,7 @@ public class UserFacade {
         user.setLastname(userUpdateParam.getLastname());
         user.setUsername(userUpdateParam.getUsername());
         user.setEmail(userUpdateParam.getEmail());
+        user.setRole(userService.getRole(userUpdateParam.getRole()));
         return UserDTO.fromEntity(userService.save(user));
     }
 

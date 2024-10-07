@@ -4,7 +4,6 @@ package git.dimitrikvirik.springsoft.order.service;
 import git.dimitrikvirik.springsoft.common.services.JwtTokenReader;
 import git.dimitrikvirik.springsoft.common.utils.SecretBasedRSAKeyGenerator;
 import git.dimitrikvirik.springsoft.order.client.AuthApiClient;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 import java.util.Objects;
 
 @Service
@@ -37,9 +32,6 @@ public class JwtService implements JwtTokenReader {
                 .build()
                 .parse(token).getPayload());
     }
-
-
-
 
 
     private String getPublicKeyString() {

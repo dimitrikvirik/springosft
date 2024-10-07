@@ -10,7 +10,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -41,18 +40,18 @@ public class User extends BaseDomain implements UserDetails {
     @Column(name = "enabled")
     private Boolean enabled;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "user_to_user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "user_role_id")
     )
-    private List<UserRole> roles;
+    private UserRole role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream().flatMap(role -> role.getAuthorities().stream())
-                .distinct()
+        return role.getAuthorities()
+                .stream()
                 .map(authority -> (GrantedAuthority) () -> authority).toList();
     }
 

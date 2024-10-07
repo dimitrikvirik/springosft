@@ -1,6 +1,7 @@
 package git.dimitrikvirik.springsoft.user.model.entity;
 
 import git.dimitrikvirik.springsoft.common.model.entity.BaseDomain;
+import git.dimitrikvirik.springsoft.user.model.UserRoleName;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,7 +19,8 @@ import java.util.List;
 public class UserRole extends BaseDomain {
 
     @Column(name = "name")
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private UserRoleName name;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role_authority", joinColumns = @JoinColumn(name = "user_role_id"))
