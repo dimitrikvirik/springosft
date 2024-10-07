@@ -6,11 +6,13 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.hazelcast.core.HazelcastInstance;
 import git.dimitrikvirik.springsoft.common.model.dto.PrincipalDTO;
+import git.dimitrikvirik.springsoft.common.services.JwtTokenReader;
 import git.dimitrikvirik.springsoft.order.model.OrderStatus;
 import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
 import git.dimitrikvirik.springsoft.order.model.param.OrderParam;
 import git.dimitrikvirik.springsoft.order.repository.OrderRepository;
-import git.dimitrikvirik.springsoft.order.service.JwtService;
+import io.jsonwebtoken.impl.DefaultClaims;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +74,7 @@ class OrderControllerIntegrationTest {
     private HazelcastInstance hazelcastClient;
 
     @MockBean
-    private JwtService jwtService;
+    private JwtTokenReader jwtTokenReader;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -81,7 +84,7 @@ class OrderControllerIntegrationTest {
 
 
     private static final PrincipalDTO principal = new PrincipalDTO(1L, List.of());
-
+    private static final String BEARER_TOKEN = "Bearer test-token";
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
@@ -95,9 +98,14 @@ class OrderControllerIntegrationTest {
     void setUp() {
         baseUrl = "http://localhost:" + port + "/api/orders";
 
-        Mockito.when(jwtService.extractAllClaims(anyString())).thenReturn(Map.of(
-                "id", principal.id(), "authorities", principal.authorities()
-        ));
+        Mockito.when(jwtTokenReader.extractAllClaims(anyString())).thenReturn(new DefaultClaims(Map.of(
+                "id", 1L,
+                "authorities", List.of()
+        )));
+    }
+
+    @AfterEach
+    void tearDown() {
         orderRepository.deleteAll();
     }
 
@@ -105,11 +113,10 @@ class OrderControllerIntegrationTest {
     @Test
     void testGetAllOrders() {
         ResponseEntity<LinkedHashMap<String, Object>> response = restTemplate.exchange(
-                RequestEntity.get(baseUrl + "?page=0&size=10&sort=id,asc")
-                        .header("Authorization", "Bearer token")
+                RequestEntity.get(URI.create(baseUrl + "?page=0&size=10&sort=id,asc"))
+                        .header("Authorization", BEARER_TOKEN)
                         .build(),
-                new ParameterizedTypeReference<>() {
-                }
+                new ParameterizedTypeReference<>() {}
         );
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

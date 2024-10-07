@@ -5,11 +5,15 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.hazelcast.core.HazelcastInstance;
+import git.dimitrikvirik.springsoft.common.model.dto.UserKafkaDTO;
+import git.dimitrikvirik.springsoft.common.services.JwtTokenGenerator;
+import git.dimitrikvirik.springsoft.common.services.JwtTokenReader;
 import git.dimitrikvirik.springsoft.user.UserApplication;
 import git.dimitrikvirik.springsoft.user.model.dto.UserDTO;
-import git.dimitrikvirik.springsoft.user.model.dto.UserKafkaDTO;
 import git.dimitrikvirik.springsoft.user.model.param.UserCreateParam;
 import git.dimitrikvirik.springsoft.user.model.param.UserUpdateParam;
+import git.dimitrikvirik.springsoft.user.repository.UserRepository;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,34 +22,28 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -56,16 +54,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.*;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.mockito.ArgumentMatchers.anyString;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = UserApplication.class)
 @Testcontainers
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
 class UserControllerIntegrationTest {
 
     @Container
@@ -82,6 +81,15 @@ class UserControllerIntegrationTest {
             .withCreateContainerCmdModifier(cmd -> cmd.withHostConfig(
                     new HostConfig().withPortBindings(new PortBinding(Ports.Binding.bindPort(5701), new ExposedPort(5701)))
             ));
+
+    @MockBean
+    private JwtTokenReader jwtTokenReader;
+
+    @MockBean
+    private JwtTokenGenerator jwtTokenGenerator;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @LocalServerPort
     private int port;
@@ -126,33 +134,55 @@ class UserControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         baseUrl = "http://localhost:" + port + "/api/users";
+
+        Mockito.when(jwtTokenReader.extractAllClaims(anyString())).thenReturn(new DefaultClaims(Map.of(
+                "id", 1,
+                "authorities", List.of("GET_USERS", "DELETE_USER")
+        )));
+
     }
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
+    }
+    private static final String BEARER_TOKEN = "Bearer test-token";
 
     @Test
     void testGetAllUsers() {
         ResponseEntity<LinkedHashMap<String, Object>> response = restTemplate.exchange(
-                baseUrl + "?page=0&size=10&sort=id,asc",
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<>() {
-                }
+                RequestEntity.get(URI.create(baseUrl + "?page=0&size=10&sort=id,asc"))
+                        .header("Authorization", BEARER_TOKEN)
+                        .build(),
+                new ParameterizedTypeReference<>() {}
         );
+
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getBody());
-        Assertions.assertTrue( ((List<?>) response.getBody().get("content")).isEmpty());
+        Assertions.assertTrue(((List<?>) response.getBody().get("content")).isEmpty());
     }
 
     @Test
     void testGetUserById() {
         UserCreateParam newUser = new UserCreateParam("John", "Doe", "johndoe", "john@example.com", "password123");
-        ResponseEntity<UserDTO> createResponse = restTemplate.postForEntity(baseUrl, newUser, UserDTO.class);
+        ResponseEntity<UserDTO> createResponse = restTemplate.exchange(
+                RequestEntity.post(URI.create(baseUrl))
+                        .header("Authorization", BEARER_TOKEN)
+                        .body(newUser),
+                UserDTO.class
+        );
         Assertions.assertEquals(HttpStatus.CREATED, createResponse.getStatusCode());
         Assertions.assertNotNull(createResponse.getBody());
 
         Long userId = createResponse.getBody().getId();
 
-        ResponseEntity<UserDTO> getResponse = restTemplate.getForEntity(baseUrl + "/" + userId, UserDTO.class);
+        ResponseEntity<UserDTO> getResponse = restTemplate.exchange(
+                RequestEntity.get(URI.create(baseUrl + "/" + userId))
+                        .header("Authorization", BEARER_TOKEN)
+                        .build(),
+                UserDTO.class
+        );
 
         Assertions.assertEquals(HttpStatus.OK, getResponse.getStatusCode());
         Assertions.assertNotNull(getResponse.getBody());
@@ -172,7 +202,12 @@ class UserControllerIntegrationTest {
     @Test
     void testCreateUser() {
         UserCreateParam newUser = new UserCreateParam("Jane", "Doe", "janedoe", "jane@example.com", "password456");
-        ResponseEntity<UserDTO> response = restTemplate.postForEntity(baseUrl, newUser, UserDTO.class);
+        ResponseEntity<UserDTO> response = restTemplate.exchange(
+                RequestEntity.post(URI.create(baseUrl))
+                        .header("Authorization", BEARER_TOKEN)
+                        .body(newUser),
+                UserDTO.class
+        );
 
         Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
         Assertions.assertNotNull(response.getBody());
@@ -189,7 +224,12 @@ class UserControllerIntegrationTest {
     @Test
     void testUpdateUser() {
         UserCreateParam newUser = new UserCreateParam("Alice", "Smith", "alicesmith", "alice@example.com", "password789");
-        ResponseEntity<UserDTO> createResponse = restTemplate.postForEntity(baseUrl, newUser, UserDTO.class);
+        ResponseEntity<UserDTO> createResponse = restTemplate.exchange(
+                RequestEntity.post(URI.create(baseUrl))
+                        .header("Authorization", BEARER_TOKEN)
+                        .body(newUser),
+                UserDTO.class
+        );
         Assertions.assertEquals(HttpStatus.CREATED, createResponse.getStatusCode());
         Assertions.assertNotNull(createResponse.getBody());
 
@@ -197,11 +237,10 @@ class UserControllerIntegrationTest {
 
         UserUpdateParam updatedUser = new UserUpdateParam("Alicia", "Johnson", "aliciaj", "alicia@example.com", "password321");
 
-        HttpEntity<UserUpdateParam> requestEntity = new HttpEntity<>(updatedUser);
         ResponseEntity<UserDTO> updateResponse = restTemplate.exchange(
-                baseUrl + "/" + userId,
-                HttpMethod.PUT,
-                requestEntity,
+                RequestEntity.put(URI.create(baseUrl + "/" + userId))
+                        .header("Authorization", BEARER_TOKEN)
+                        .body(updatedUser),
                 UserDTO.class
         );
 
@@ -222,7 +261,12 @@ class UserControllerIntegrationTest {
     @Test
     void testDeleteUser() throws InterruptedException {
         UserCreateParam newUser = new UserCreateParam("Bob", "Brown", "bobbrown", "bob@example.com", "password101");
-        ResponseEntity<UserDTO> createResponse = restTemplate.postForEntity(baseUrl, newUser, UserDTO.class);
+        ResponseEntity<UserDTO> createResponse = restTemplate.exchange(
+                RequestEntity.post(URI.create(baseUrl))
+                        .header("Authorization", BEARER_TOKEN)
+                        .body(newUser),
+                UserDTO.class
+        );
         Assertions.assertEquals(HttpStatus.CREATED, createResponse.getStatusCode());
         Assertions.assertNotNull(createResponse.getBody());
 
@@ -230,16 +274,22 @@ class UserControllerIntegrationTest {
         Long userId = responseBody.getId();
 
         ResponseEntity<Void> deleteResponse = restTemplate.exchange(
-                baseUrl + "/" + userId,
-                HttpMethod.DELETE,
-                null,
+                RequestEntity.delete(URI.create(baseUrl + "/" + userId))
+                        .header("Authorization", BEARER_TOKEN)
+                        .build(),
                 Void.class
         );
 
         Assertions.assertEquals(HttpStatus.NO_CONTENT, deleteResponse.getStatusCode());
 
-        ResponseEntity<UserDTO> getResponse = restTemplate.getForEntity(baseUrl + "/" + userId, UserDTO.class);
+        ResponseEntity<UserDTO> getResponse = restTemplate.exchange(
+                RequestEntity.get(URI.create(baseUrl + "/" + userId))
+                        .header("Authorization", BEARER_TOKEN)
+                        .build(),
+                UserDTO.class
+        );
         Assertions.assertEquals(HttpStatus.NOT_FOUND, getResponse.getStatusCode());
+
         Assertions.assertTrue(hazelcastClient.getMap("users").isEmpty());
 
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(kafka.getBootstrapServers(), "test", "true");

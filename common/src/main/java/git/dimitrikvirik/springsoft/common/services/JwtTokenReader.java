@@ -13,9 +13,5 @@ public interface JwtTokenReader {
      */
     Claims extractAllClaims(String token);
 
-    /**
-     * Gets the public key string used for token verification.
-     * @return The public key as a string
-     */
-    String getPublicKeyString();
+
 }

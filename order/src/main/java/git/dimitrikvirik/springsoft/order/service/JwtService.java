@@ -47,8 +47,8 @@ public class JwtService implements JwtTokenReader {
         }
     }
 
-    @Override
-    public String getPublicKeyString() {
+
+    private String getPublicKeyString() {
         if(publicKeyString == null) {
             synchronized (this) {
                 if(publicKeyString == null) {

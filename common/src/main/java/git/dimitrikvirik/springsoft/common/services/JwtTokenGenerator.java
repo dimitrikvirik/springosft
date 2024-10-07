@@ -14,4 +14,10 @@ public interface JwtTokenGenerator {
      * @return The generated JWT token string
      */
     String generateToken(Map<String, Object> extraClaims, UserDetails userDetails);
+
+    /**
+     * Gets the public key string used for token verification.
+     * @return The public key as a string
+     */
+    String getPublicKeyString();
 }
