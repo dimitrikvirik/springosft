@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.user.config;
 
+import git.dimitrikvirik.springsoft.common.config.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

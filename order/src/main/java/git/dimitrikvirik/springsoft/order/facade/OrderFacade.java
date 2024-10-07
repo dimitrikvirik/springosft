@@ -1,6 +1,8 @@
 package git.dimitrikvirik.springsoft.order.facade;
 
+import git.dimitrikvirik.springsoft.common.model.dto.PrincipalDTO;
 import git.dimitrikvirik.springsoft.common.model.dto.UserKafkaDTO;
+import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
 import git.dimitrikvirik.springsoft.order.model.entity.Order;
 import git.dimitrikvirik.springsoft.order.model.param.OrderParam;
 import git.dimitrikvirik.springsoft.order.service.OrderService;
@@ -38,12 +40,13 @@ public class OrderFacade {
         return orderService.getUserOrders(getPrincipal().id(), pageable).map(OrderDTO::fromEntity);
     }
 
-   @PostAuthorize("returnObject.userId == authentication.principal.id or hasAuthority('GET_ORDERS')")
+    @PostAuthorize("returnObject.userId == authentication.principal.id or hasAuthority('GET_ORDERS')")
     @Cacheable(value = "orders", key = "#id")
     public OrderDTO getOrderById(Long id) {
         log.info("Get order by id: {}", id);
         return OrderDTO.fromEntity(orderService.getById(id));
     }
+
     @CacheEvict(value = "orders", allEntries = true)
     public OrderDTO createOrder(OrderParam orderParam) {
         log.info("Create order: {}", orderParam);
@@ -59,6 +62,7 @@ public class OrderFacade {
 
         return OrderDTO.fromEntity(orderService.save(order));
     }
+
     @CacheEvict(value = "orders", allEntries = true)
     public OrderDTO updateOrder(Long id, OrderParam orderParam) {
         log.info("Update order: {}", orderParam);
@@ -76,6 +80,7 @@ public class OrderFacade {
 
         return OrderDTO.fromEntity(orderService.save(order));
     }
+
     @CacheEvict(value = "orders", allEntries = true)
     public void deleteOrder(Long id) {
         log.info("Delete order: {}", id);
@@ -98,7 +103,7 @@ public class OrderFacade {
     @KafkaListener(topics = "user-topic", groupId = "order-group")
     public void userConsume(UserKafkaDTO userKafkaDTO) {
         log.info("User consume: {}", userKafkaDTO);
-        if(!userKafkaDTO.enabled()) {
+        if (!userKafkaDTO.enabled()) {
             orderService.deleteAllUserOrders(userKafkaDTO.userId());
         }
     }

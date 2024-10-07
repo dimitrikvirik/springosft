@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.user.model.entity;
 
+import git.dimitrikvirik.springsoft.common.model.entity.BaseDomain;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -14,8 +14,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyPair;
-import java.util.*;
-import java.util.function.Function;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class JwtService implements JwtTokenReader, JwtTokenGenerator {
@@ -39,7 +41,6 @@ public class JwtService implements JwtTokenReader, JwtTokenGenerator {
         keyPair = SecretBasedRSAKeyGenerator.generateKeyPair(secretKey);
         publicKeyString = SecretBasedRSAKeyGenerator.publicKeyToString(keyPair.getPublic());
     }
-
 
 
 
@@ -72,19 +73,6 @@ public class JwtService implements JwtTokenReader, JwtTokenGenerator {
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith( keyPair.getPrivate())
                 .compact();
-    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 
     @Override

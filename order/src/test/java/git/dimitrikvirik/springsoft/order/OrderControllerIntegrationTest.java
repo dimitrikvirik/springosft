@@ -5,7 +5,9 @@ import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.hazelcast.core.HazelcastInstance;
+import git.dimitrikvirik.springsoft.common.model.dto.PrincipalDTO;
 import git.dimitrikvirik.springsoft.order.model.OrderStatus;
+import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
 import git.dimitrikvirik.springsoft.order.model.param.OrderParam;
 import git.dimitrikvirik.springsoft.order.repository.OrderRepository;
 import git.dimitrikvirik.springsoft.order.service.JwtService;
@@ -21,7 +23,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -104,7 +108,8 @@ class OrderControllerIntegrationTest {
                 RequestEntity.get(baseUrl + "?page=0&size=10&sort=id,asc")
                         .header("Authorization", "Bearer token")
                         .build(),
-                new ParameterizedTypeReference<>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

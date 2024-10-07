@@ -3,6 +3,7 @@ package git.dimitrikvirik.springsoft.order.model;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import git.dimitrikvirik.springsoft.common.services.CacheFactory;
+import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
 import org.springframework.stereotype.Component;
 
 @Component

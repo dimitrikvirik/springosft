@@ -1,7 +1,7 @@
 package git.dimitrikvirik.springsoft.user.facade;
 
+import git.dimitrikvirik.springsoft.common.model.dto.UserKafkaDTO;
 import git.dimitrikvirik.springsoft.user.model.dto.UserDTO;
-import git.dimitrikvirik.springsoft.user.model.dto.UserKafkaDTO;
 import git.dimitrikvirik.springsoft.user.model.entity.User;
 import git.dimitrikvirik.springsoft.user.model.param.UserCreateParam;
 import git.dimitrikvirik.springsoft.user.model.param.UserUpdateParam;
