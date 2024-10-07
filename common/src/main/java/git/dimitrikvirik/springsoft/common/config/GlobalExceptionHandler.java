@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 
-    private  ConstraintList constraintList;
+    private ConstraintList constraintList;
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception ex) {
@@ -86,7 +86,6 @@ public class GlobalExceptionHandler {
     }
 
 
-
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
 
@@ -94,7 +93,7 @@ public class GlobalExceptionHandler {
 
         if (ex.getCause() instanceof ConstraintViolationException) {
             String constraintName = ((ConstraintViolationException) ex.getCause()).getConstraintName();
-            if (constraintName != null) {
+            if (constraintName != null && constraintList != null) {
                 for (Map.Entry<String, String> constraint : constraintList.getConstraintList().entrySet()) {
                     if (constraint.getKey().equals(constraintName)) {
                         error = constraint.getValue();
