@@ -1,4 +1,4 @@
-package git.dimitrikvirik.springsoft.order.model.entity;
+package git.dimitrikvirik.springsoft.common.model.entity;
 
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;

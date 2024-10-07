@@ -1,34 +1,27 @@
 package git.dimitrikvirik.springsoft.user.service;
 
 
-import git.dimitrikvirik.springsoft.user.utils.SecretBasedRSAKeyGenerator;
+import git.dimitrikvirik.springsoft.common.services.JwtTokenGenerator;
+import git.dimitrikvirik.springsoft.common.services.JwtTokenReader;
+import git.dimitrikvirik.springsoft.common.utils.SecretBasedRSAKeyGenerator;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.function.Function;
 
 @Service
-public class JwtService {
+public class JwtService implements JwtTokenReader, JwtTokenGenerator {
 
 
-    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
     @Value("${jwt.secret}")
     private String secretKey;
 
@@ -48,14 +41,6 @@ public class JwtService {
     }
 
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
 
 
     public String generateToken(
@@ -102,28 +87,20 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private Claims extractAllClaims(String token) {
+    @Override
+    public Claims extractAllClaims(String token) {
 
         return (Claims) Jwts
                 .parser()
-                .verifyWith(getPublicKey(publicKeyString))
+                .verifyWith(  SecretBasedRSAKeyGenerator.stringToPublicKey(publicKeyString))
                 .build()
                 .parse(token).getPayload();
     }
 
 
 
-    private   PublicKey getPublicKey(String publicKey) {
-        try {
 
-            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKey);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
-            return keyFactory.generatePublic(keySpec);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create public key", e);
-        }
-    }
+
 
 
 }

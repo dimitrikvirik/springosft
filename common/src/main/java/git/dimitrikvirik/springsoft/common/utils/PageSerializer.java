@@ -1,4 +1,4 @@
-package git.dimitrikvirik.springsoft.order.config;
+package git.dimitrikvirik.springsoft.common.utils;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;

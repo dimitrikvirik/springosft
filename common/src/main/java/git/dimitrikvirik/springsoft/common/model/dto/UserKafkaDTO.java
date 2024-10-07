@@ -1,4 +1,4 @@
-package git.dimitrikvirik.springsoft.order.model.dto;
+package git.dimitrikvirik.springsoft.common.model.dto;
 
 public record UserKafkaDTO(
         Long userId,

@@ -1,9 +1,9 @@
-package git.dimitrikvirik.springsoft.order.config;
+package git.dimitrikvirik.springsoft.common.config;
 
 
-import git.dimitrikvirik.springsoft.order.model.dto.PrincipalDTO;
-import git.dimitrikvirik.springsoft.order.service.JwtService;
-import io.jsonwebtoken.Claims;
+import git.dimitrikvirik.springsoft.common.model.dto.PrincipalDTO;
+import git.dimitrikvirik.springsoft.common.services.JwtTokenReader;
+
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -28,7 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final JwtTokenReader jwtTokenReader;
 
 
     @Override
@@ -45,7 +43,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         jwt = authHeader.substring(7);
         try {
-            Map<String, Object> allClaims = jwtService.extractAllClaims(jwt);
+            Map<String, Object> allClaims = jwtTokenReader.extractAllClaims(jwt);
 
 
             Integer id = ((Integer) allClaims.get("id"));

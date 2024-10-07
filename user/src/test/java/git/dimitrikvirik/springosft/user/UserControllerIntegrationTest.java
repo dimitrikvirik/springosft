@@ -66,7 +66,6 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 @Testcontainers
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@Import(UserControllerIntegrationTest.TestSecurityConfiguration.class)
 class UserControllerIntegrationTest {
 
     @Container
@@ -114,26 +113,6 @@ class UserControllerIntegrationTest {
             return new KafkaTemplate<>(producerFactory());
         }
     }
-
-    @TestConfiguration
-    public static class TestSecurityConfiguration {
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-            http
-                    .csrf(AbstractHttpConfigurer::disable)
-                    .authorizeHttpRequests(auth -> auth
-                            .anyRequest().permitAll()
-                    );
-
-            return http.build();
-        }
-
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-            return new BCryptPasswordEncoder();
-        }
-    }
-
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {

@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.order.model.entity;
 
+import git.dimitrikvirik.springsoft.common.model.entity.BaseDomain;
 import git.dimitrikvirik.springsoft.order.model.OrderStatus;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;

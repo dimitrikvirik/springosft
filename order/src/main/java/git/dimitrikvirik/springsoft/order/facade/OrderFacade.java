@@ -1,9 +1,6 @@
 package git.dimitrikvirik.springsoft.order.facade;
 
-import git.dimitrikvirik.springsoft.order.model.OrderStatus;
-import git.dimitrikvirik.springsoft.order.model.dto.OrderDTO;
-import git.dimitrikvirik.springsoft.order.model.dto.PrincipalDTO;
-import git.dimitrikvirik.springsoft.order.model.dto.UserKafkaDTO;
+import git.dimitrikvirik.springsoft.common.model.dto.UserKafkaDTO;
 import git.dimitrikvirik.springsoft.order.model.entity.Order;
 import git.dimitrikvirik.springsoft.order.model.param.OrderParam;
 import git.dimitrikvirik.springsoft.order.service.OrderService;

@@ -1,5 +1,6 @@
 package git.dimitrikvirik.springsoft.order.config;
 
+import git.dimitrikvirik.springsoft.common.config.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +26,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-
 
 
     @Bean

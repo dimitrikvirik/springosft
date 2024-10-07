@@ -1,26 +1,23 @@
 package git.dimitrikvirik.springsoft.order.service;
 
 
+import git.dimitrikvirik.springsoft.common.services.JwtTokenReader;
 import git.dimitrikvirik.springsoft.order.client.AuthApiClient;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-public class JwtService {
+public class JwtService implements JwtTokenReader {
 
     private volatile String publicKeyString;
 
@@ -28,17 +25,14 @@ public class JwtService {
 
 
 
-
-
-
-    public Map<String, Object> extractAllClaims(String token) {
+    @Override
+    public Claims extractAllClaims(String token) {
        return  ( (Claims) Jwts
                 .parser()
                 .verifyWith(getPublicKey(getPublicKeyString()))
                 .build()
                 .parse(token).getPayload());
     }
-
 
 
     private   PublicKey getPublicKey(String publicKey) {
@@ -53,6 +47,7 @@ public class JwtService {
         }
     }
 
+    @Override
     public String getPublicKeyString() {
         if(publicKeyString == null) {
             synchronized (this) {
