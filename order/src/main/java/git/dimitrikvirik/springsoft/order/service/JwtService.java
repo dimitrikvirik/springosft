@@ -7,6 +7,8 @@ import git.dimitrikvirik.springsoft.order.client.AuthApiClient;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyFactory;
@@ -19,6 +21,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class JwtService implements JwtTokenReader {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
     private volatile String publicKeyString;
 
     private final AuthApiClient authApiClient;
@@ -52,6 +55,7 @@ public class JwtService implements JwtTokenReader {
         if(publicKeyString == null) {
             synchronized (this) {
                 if(publicKeyString == null) {
+                    log.info("Retrieving public key");
                     publicKeyString = Objects.requireNonNull(authApiClient.getPublicKey().getBody()).getKey();
                 }
             }
