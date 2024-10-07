@@ -33,7 +33,7 @@ public class JwtService implements JwtTokenReader {
     public Claims extractAllClaims(String token) {
        return  ( (Claims) Jwts
                 .parser()
-               .verifyWith(SecretBasedRSAKeyGenerator.stringToPublicKey(publicKeyString))
+               .verifyWith(SecretBasedRSAKeyGenerator.stringToPublicKey(getPublicKeyString()))
                 .build()
                 .parse(token).getPayload());
     }
